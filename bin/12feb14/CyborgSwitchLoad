@@ -1,0 +1,15 @@
+#!/bin/tcsh
+#Spawn function to update write the ARM command into shared memory
+#Then display the guppi status
+#HISTORY
+#12JAN17 GIL automate loading Sri's design
+#12JAN05 GIL use katcp
+#11APR15 GIL initial version
+
+unsetenv PYTHONPATH
+
+python2.7 /opt/64bit/cyborg/bin/CyborgSwitchLoad.py
+
+
+
+

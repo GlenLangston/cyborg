@@ -1,0 +1,65 @@
+#!/bin/tcsh
+#Spawn function to update the 43m status in GUPPI shared memory
+#Then display the guppi status
+#HISTORY
+#12FEB24 GIL switch to back to IQUV for calibration tests
+#12FEB10 GIL switch to only I to simplify
+#12JAN20 GIL tweak parameters to get better fold
+#10FEB04 GIL increase design integration time to 12 spectra (from 10)
+#10FEB04 GIL ds in time and freq for test pulsars
+#09NOV17 GIL go back to 4  time sample median
+#09NOV22 GIL go back to 1  time sample median
+#09NOV17 GIL go back to 4  time sample median
+#09OCT24 GIL go back to no time sample median
+#09OCT24 GIL go back to 4  time sample median
+#09SEP21 GIL go back to 4  time sample median
+#09SEP03 GIL use 4096 channel mode
+#09AUG30 GIL --acc_len=10 --dstime=4 and --dsfreq=4 Works!
+#09AUG29 GIL start to use dstime and dsfreq
+#09AUG28 GIL save only I
+#09AUG27 GIL read source name from 43m and scan number from a file
+#09AUG24 GIL add more arguments
+#09AUG14 GIL add --gb43m to the command list
+#09JUN26 GIL initial version
+
+source /opt/64bit/cyborg/cyborg.csh
+
+if ( "$1" == "" ) then
+  echo "WuppiObs: Configures WUPPI for an observation"
+  echo "usage   : WuppiObs -n <scanNum> --src=<sourceName> -T <obsDurationSeconds>"
+  exit
+endif
+
+# read the current 43m source name
+set src=`python /opt/64bit/cyborg/bin/43mSource.py`
+echo 'Source: ' $src
+
+# read the last scan number
+if (-f 'LASTSCAN.TXT') then
+  set lastScan=`tail -1 LASTSCAN.TXT`
+  # increment the scan number
+  @ nextScan = $lastScan + 1
+  echo 'Next Scan Number: ' $nextScan
+# now prepare to save the scan number
+  rm -f LASTSCAN.TXT
+else
+  set nextScan=1
+endif
+
+# save the scan number and let others update it
+echo $nextScan > LASTSCAN.TXT
+chmod 666 LASTSCAN.TXT
+
+#finally set up the observations
+#Temporarily add --dsfreq=2 --onlyI
+#guppi_set_params --gb43m --packets=1SFA --nchan=2048 --bw=800 --freq=400.0 --acc_len=32 --obs=Shilpa/Glen --src=$src --dsfreq=2 --onlyI -n $nextScan $1 $2 $3 $4 $5 $6 $7 $8 $9 $10
+# --dsfreq=2 --onlyI was working; will try without --dsfreq=2
+# -- for fast pulsars need to remove -dsfreq=4
+#guppi_set_params --gb43m --dsfreq=1 --onlyI --dstime=1 --packets=1SFA --nchan=4096 --bw=-800. --freq=1200.0 --acc_len=10 --obs=Shilpa/Glen --src=$src -n $nextScan $1 $2 $3 $4 $5 $6 $7 $8 $9 $10
+
+/opt/64bit/cyborg/bin/suppi_set_params --gb43m --dsfreq=1 --dstime=1 --packets=1SFA --nchan=1024 --bw=-500.0 --acc_len=512 --freq=10000.0 --obs=Skynet/Glen --src=$src -n $nextScan --npol 4 $1 $2 $3 $4 $5 $6 $7 $8 $9 $10
+
+setenv mjd `/opt/64bit/cyborg/bin/nowMjd`
+
+python /opt/64bit/cyborg/bin/SuppiBase.py $mjd $nextScan
+

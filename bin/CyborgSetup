@@ -1,0 +1,65 @@
+#!/bin/tcsh
+# configuration for the Wuppi with the Guppi design
+# configuration for the Ruppi with the Parkes spectrometer design
+#12FEB13 GIL ruppi->cyborg
+#11FEB18 GIL wait a while before starting test net thread
+#10JUN04 GIL kill old code and start new
+#10APR30 GIL initial notes from ruppi tests
+
+setenv testNetPid `pgrep test_net_thread`
+if ( "$testNetPid" != "" ) then
+   echo 'Killing a running test_net_thread program, PID:' $testNetPid
+   kill -9 $testNetPid
+endif
+
+echo ''
+echo 'Testing UDP link: taking a few seconds of data...'
+echo ''
+# The -e argument indicates the counters are endian flipped.
+# -p 50000 means port 50000
+# -p 52000 means port 52000
+# -s 8224  means the 1 size fits all block size of 8224 bytes
+# -n 90000 means collect 90000 blocks of data
+/users/glangsto/parspec/udp_recv -e -s 8224 -n 9000 -p 52000 192.168.3.13
+
+source /opt/64bit/cyborg/cyborg.csh
+
+/opt/64bit/cyborg/bin/CyborgInit
+/opt/64bit/cyborg/bin/CyborgWait 3 5
+
+sleep 2
+
+echo ''
+echo 'Spawning Test Net Thread'
+
+setenv testNetPid `pgrep test_net_th`
+
+if ( "$testNetPid" != "" ) then
+   echo 'Killing running test_net_thread program, PID:' $testNetPid
+   kill -9 $testNetPid
+endif
+
+test_net_thread &
+
+setenv guppiPid `pgrep guppi_daq`
+if ( "$guppiPid" != "" ) then
+   echo 'Killing a running guppi_daq program, PID:' $guppiPid
+   kill -9 $guppiPid
+endif
+
+setenv wuppiPid `pgrep wuppi_daq`
+if ( "$guppiPid" != "" ) then
+   echo 'Killing a running wuppi_daq program, PID:' $wuppiPid
+   kill -9 $wuppiPid
+endif
+
+setenv guppiPid `pgrep guppi_monitor`
+if ( "$guppiPid" != "" ) then
+   echo 'Killing a running guppi_monitor program, PID:' $guppiPid
+   kill -9 $guppiPid
+endif
+
+sleep 5
+
+/opt/64bit/cyborg/bin/CyborgWeb
+

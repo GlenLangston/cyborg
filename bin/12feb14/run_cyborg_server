@@ -1,0 +1,7 @@
+#!/bin/bash
+
+source /opt/64bit/cyborg/cyborg.bash > /dev/null
+
+echo -n "running cyborg server "
+date
+exec cyborg_server controller $@

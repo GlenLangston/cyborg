@@ -1,0 +1,117 @@
+#!/bin/tcsh
+#function to wait a specified number of seconds, then start a Wuppi obs
+#HISTORY
+#12FEB13 GIl Cyborg name
+#11APR15 GIl Init Sri's new code
+#10NOV07 GIl change defaults for 1200/800 MHz obs
+#10AUG26 GIl change defaults for 400/800 MHz obs
+#10JUL28 GIl change defaults for 330/220 MHz obs
+#10FEB08 GIl pass remaining arguments to WuppiObs
+#09DEC09 GIl run/kill wuppi_daq
+#09SEP28 GIl do not respawn Figure, since it can not yet be killed
+#09SEP24 GIl kill Figure when restarting plotting
+#09SEP21 GIl restore median 4 in time
+#09SEP19 GIL fix restarting web page update
+#09SEP18 GIL restart restart web page update
+#09SEP16 GIL stop test_net_thread if its running, before the obs
+#09SEP11 GIL initial version
+
+source /opt/64bit/cyborg/cyborg.csh
+
+if ( "$2" == "" ) then
+  echo "CyborgWait: Wait a specified number of second then start a scan of seconds"
+  echo "usage   : CyborgWait <WaitSeconds> <ObsSeconds>"
+  echo "where   <WaitSeconds> is the number of seconds to wait before obs"
+  echo "where   <ObsSeconds>  is the number of seconds to observe"
+  exit
+endif
+
+echo "Waiting " $1 " Seconds before starting a " $2 " second observation"
+
+sleep $1
+
+# now kill any other running data collects
+
+setenv testNetPid `pgrep test_net_thread`
+if ( "$testNetPid" != "" ) then
+   echo 'Killing a running test_net_thread program, PID:' $testNetPid
+   kill -9 $testNetPid
+endif
+
+setenv guppiPid `pgrep guppi_daq`
+if ( "$guppiPid" != "" ) then
+   echo 'Killing a running guppi_daq program, PID:' $guppiPid
+   kill -9 $guppiPid
+endif
+
+setenv cyborgPid `pgrep cyborg_daq`
+if ( "$cyborgPid" != "" ) then
+   echo 'Killing a running cyborg_daq program, PID:' $cyborgPid
+   kill -9 $cyborgPid
+endif
+
+setenv wuppiPid `pgrep wuppi_daq`
+if ( "$guppiPid" != "" ) then
+   echo 'Killing a running wuppi_daq program, PID:' $wuppiPid
+   kill -9 $wuppiPid
+endif
+
+echo 'calling CyborgObs'
+# now should be able to cleanly take data
+#WuppiObs -T $2 --freq=400. --bw=-800. $3 $4 $5 $6 $7 $8 $9
+CyborgObs -T $2 $3 $4 $5 $6 $7 $8 $9
+echo 'called CyborgObs'
+
+# spawn a task to take the data
+cyborg_search &
+
+sleep 10
+
+# now wait for data taking to finish
+sleep $2
+
+# guppi daq is not cleaning ending so kill it
+setenv guppiPid `pgrep guppi_daq`
+if ( "$guppiPid" != "" ) then
+   echo 'Killing a running guppi_daq program, PID:' $guppiPid
+   kill -9 $guppiPid
+endif
+
+setenv wuppiPid `pgrep wuppi_daq`
+if ( "$wuppiPid" != "" ) then
+   echo 'Killing a running wuppi_daq program, PID:' $wuppiPid
+   kill -9 $wuppiPid
+endif
+
+setenv cyborgPid `pgrep cyborg_daq`
+if ( "$cyborgPid" != "" ) then
+   echo 'Killing a running cyborg_daq program, PID:' $cyborgPid
+   kill -9 $cyborgPid
+endif
+
+sleep 2
+
+# now restart the data monitor process
+test_net_thread &
+
+sleep 2
+
+setenv WuppiWebPid `pgrep WuppiWeb`
+if ( "$WuppiWebPid" != "" ) then
+   echo 'Killing a running WuppiWeb program, PID:' $WuppiWebPid
+   kill -9 $WuppiWebPid
+endif
+
+setenv CyborgWebPid `pgrep CyborgWeb`
+if ( "$CyborgWebPid" != "" ) then
+   echo 'Killing a running WuppiWeb program, PID:' $CyborgWebPid
+   kill -9 $CyborgWebPid
+endif
+
+setenv FigurePid `pgrep Figure`
+if ( "$FigurePid" != "" ) then
+   echo 'Killing a running Figure program, PID:' $FigurePid
+   kill -9 $FigurePid
+endif
+
+

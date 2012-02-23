@@ -1,0 +1,11 @@
+#!/bin/bash
+#Spawn function to update the 43m status in GUPPI shared memory
+#Then display the guppi status
+#HISTORY
+#09JUN26 GIL initial version
+
+source /opt/64bit/cyborg/cyborg.bash
+
+python /opt/64bit/cyborg/bin/CyborgInit.py &
+
+

@@ -1,0 +1,19 @@
+#! /bin/bash
+#HISTORY
+# 10FEB09 GIL source environment before starting plot
+# 09SEP14 GIL Initial version based on guppi_monitor
+
+source /opt/64bit/cyborg/cyborg.bash
+
+#define executables directory
+CYBORG_DIR=/opt/64bit/cyborg/bin
+
+if test "${CYBORG_DIR}zz" = zz; then
+	echo "Error: WUPPI_DIR environment variable not set, exiting."
+	exit 1
+fi
+
+
+(exec -a Figure python $CYBORG_DIR/suppi_web_monitor.py) &
+
+

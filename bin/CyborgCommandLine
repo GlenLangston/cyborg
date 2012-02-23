@@ -1,0 +1,45 @@
+#!/bin/tcsh
+#Spawn function to startup the Cyborg Command Line interface
+#Then report the readback value
+#HISTORY
+#12Feb23 GIL add comments
+#12JAN05 GIL use katcp
+#11APR15 GIL initial version
+
+set arg1=$1
+#set the default accumulation length to 512 == 1.048576 milli-seconds
+if ("$arg1" == "-h" || "$arg1" == "-help") then
+  echo "CyborgCommandLine:  Interface to the Cyborg Spectrometer design"
+  echo "useful commands:"
+  echo "  fpga.listbof()     - List available designs"
+  echo "  i = fpga.reaq_int('ACC_LEN')  - read accumulation length"
+  echo "  fpga.write_int('ACC_LEN',31)  - write accumulation length"
+endif
+echo "Starting Cyborg Command Line interface"
+
+set pyFile = /tmp/CyborgCommandLine.py
+rm -f $pyFile !> /dev/null
+
+echo '#Python Script to startup the Cyborg Command line' > $pyFile
+echo '#Glen Langston, 2012 February 13' >> $pyFile
+echo 'import corr' >> $pyFile
+echo 'import time' >> $pyFile
+echo 'import sys' >> $pyFile
+
+echo -n 'fpga = corr.katcp_wrapper.FpgaClient(' >> $pyFile
+echo -n "'169.254.128.41'" >> $pyFile
+echo ',7147)' >> $pyFile
+echo 'time.sleep(0.2)' >> $pyFile
+echo 'fpga.listdev()' >> $pyFile
+echo 'time.sleep(0.2)' >> $pyFile
+echo -n 'readAccLen = fpga.read_int(' >> $pyFile
+echo -n "'ACC_LEN'" >> $pyFile
+echo ')' >> $pyFile
+echo 'print "ACC_LEN Read:",readAccLen' >> $pyFile
+
+unsetenv PYTHONPATH
+
+cat $pyFile | /opt/local/bin/ipython
+
+
+

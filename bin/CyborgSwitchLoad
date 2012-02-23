@@ -1,0 +1,16 @@
+#!/bin/tcsh
+#Function to load all the parameters of switching signal spectrometer
+#Then display the guppi status
+#HISTORY
+#12FEB23 GIL use new path arguments
+#12JAN17 GIL automate loading Sri's design
+#12JAN05 GIL use katcp
+#11APR15 GIL initial version
+
+unsetenv PYTHONPATH
+
+python2.7 $CYBORGHOME/bin/CyborgSwitchLoad.py
+
+
+
+

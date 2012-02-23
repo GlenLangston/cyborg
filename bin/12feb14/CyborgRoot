@@ -1,0 +1,26 @@
+#!/bin/bash
+#Setup WUPPI root commands
+#HISTORY
+#11JAN28 GIL initial version
+
+source /opt/64bit/cyborg/cyborg.bash
+
+echo 'Initializing Shared Memory'
+
+#initialize the shared memory interface between the data acquisition and
+#observation control
+/opt/64bit/guppi/guppi_daq/bin/guppi_init_shmem
+
+# The next commands depend on the contents of file /etc/supervisord.conf
+/home/pulsar64/bin/python /home/pulsar64/bin/supervisord
+
+#The next step is not always necessary, but why not...
+/home/pulsar64/bin/supervisorctl restart cyborg
+
+echo 'Shared memory interface configured'
+exit
+
+
+
+
+

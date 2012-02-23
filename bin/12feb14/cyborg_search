@@ -1,0 +1,22 @@
+#! /usr/bin/env python
+#HISTORY
+#12FEB13 GIL version that runs the cyborg_daq
+#10APR14 GIL version that runs the ruppi_daq
+#10JAN20 GIL replace old code with current wuppi_daq
+import os, sys, time
+
+# connect to roach2 client
+from guppi.client import Client
+cicada = Client()
+
+cmd = "/opt/64bit/cyborg/bin/cyborg_daq"
+
+# Set extra arm
+CyborgArmCmd = "/opt/64bit/cyborg/bin/CyborgArm"
+pid = os.spawnl(os.P_NOWAIT, CyborgArmCmd, "CyborgArm")
+time.sleep(.01)
+pid = os.spawnl(os.P_NOWAIT, cmd, "cyborg_daq")
+time.sleep(.01)
+pid = os.spawnl(os.P_NOWAIT, CyborgArmCmd, "CyborgArm")
+os.waitpid(pid,0)
+

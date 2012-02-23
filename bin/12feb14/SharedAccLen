@@ -1,0 +1,38 @@
+#!/bin/tcsh
+#Function to write to shared memory the Accumulation length
+#HISTORY
+#12FEB14 GIL initial version
+
+source /opt/64bit/cyborg/cyborg.csh
+
+set AccLen=$1
+if ("$AccLen" == "") then
+  set AccLen=16
+endif
+
+echo "SharedAccLen: Set desired Accumulation Length to " $AccLen " Spectra"
+
+set pyFile = /tmp/Shared"$AccLen".py
+rm -f $pyFile !> /dev/null
+
+echo '#Python Script to set Shared memory Accumulation Length' > $pyFile
+echo '#Glen Langston, 2012 February 14' >> $pyFile
+
+echo 'from guppi_utils import *' >> $pyFile
+echo 'import time' >> $pyFile
+echo 'import sys' >> $pyFile
+echo 'g = guppi_status()' >> $pyFile
+
+echo -n 'g.update("ACC_LEN",' >> $pyFile
+echo -n $AccLen >> $pyFile
+echo ')' >> $pyFile
+echo 'g.write()' >> $pyFile
+echo 'exit()' >> $pyFile
+echo 'Created: ' $pyFile
+
+python $pyFile
+
+
+#rm -f $pyFile !> /dev/null
+
+

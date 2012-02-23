@@ -1,0 +1,45 @@
+#!/bin/tcsh
+#Spawn function to update shared memory with Cyborg Parameters
+#Then report the readback value
+#HISTORY
+#12Feb23 GIL add comments
+#12JAN05 GIL use katcp
+#11APR15 GIL initial version
+
+echo "CyborgGetLoop: Python Script to update Shared Memory with Cyborg Parms"
+
+set pyFile = /tmp/CyborgGetLoop.py
+rm -f $pyFile !> /dev/null
+
+echo '#Python Script to set Cyborg Accumulation Length' > $pyFile
+echo '#Glen Langston, 2012 February 13' >> $pyFile
+echo 'import corr' >> $pyFile
+echo 'import time' >> $pyFile
+echo 'import sys' >> $pyFile
+echo 'from guppi_utils import *' >> $pyFile
+
+echo -n 'fpga = corr.katcp_wrapper.FpgaClient(' >> $pyFile
+echo -n "'169.254.128.41'" >> $pyFile
+echo ',7147)' >> $pyFile
+echo 'time.sleep(0.2)' >> $pyFile
+echo 'while True: ' >> $pyFile
+echo '    g = guppi_status()' >> $pyFile
+echo -n '    readGetLoop = fpga.read_int(' >> $pyFile
+echo -n "'ACC_LEN'" >> $pyFile
+echo ')' >> $pyFile
+echo -n '    readGetLoop = fpga.read_int(' >> $pyFile
+echo -n "'ACC_LEN'" >> $pyFile
+echo ')' >> $pyFile
+echo '    g.update( "CYBORG_N", readGetLoop+1)' >> $pyFile
+echo '    g.write()' >> $pyFile
+echo '    time.sleep(2.0)' >> $pyFile
+
+
+echo 'Created: ' $pyFile
+
+unsetenv PYTHONPATH
+
+python2.7 $pyFile
+
+#rm -f $pyFile
+

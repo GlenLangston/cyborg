@@ -1,0 +1,27 @@
+#!/bin/tcsh
+#Spawn function to update the 43m status in GUPPI shared memory
+#Then display the guppi status
+#HISTORY
+#12FEB13 GIL ruppi->cyborg
+#10MAR02 GIL Put WuppiStatus in the header line
+#10FEB08 GIL finally fix killing set loop before starting another
+#10JAN12 GIL stop previous set loop, to ease 43m cpu load
+#09JUN26 GIL initial version
+
+source /opt/64bit/cyborg/cyborg.csh
+
+#find the wuppi_set_loop PID and kill it if running
+setenv cyborgSetPid `ps x | grep cyborg_set | grep .py | awk '{print  $1}'`
+if ( "$cyborgSetPid" != "" ) then
+   echo 'Killing a running cyborg_set_loop.py, PID:' $cyborgSetPid
+   kill $cyborgSetPid
+endif
+
+echo -n "]2;$host--CyborgStatus"
+
+#setenv PYTHONPATH /home/groups/20mops/pyControl:$PYTHONPATH
+
+python /opt/64bit/cyborg/bin/cyborg_set_loop.py &
+
+cyborg_status
+

@@ -1,0 +1,35 @@
+#!/bin/tcsh
+#Spawn function to update write the ARM command into shared memory
+#Then display the guppi status
+#HISTORY
+#12FEB14 GIL use katcp to get the accumulation length
+#11APR15 GIL initial version
+
+#echo "CyborgGetAccLen: Get Cyborg Accumulation Length"
+
+set pyFile = /tmp/CyborgGetAccLen.py
+rm -f $pyFile !> /dev/null
+
+echo '#Python Script to get Cyborg Accumulation Length' > $pyFile
+echo '#Glen Langston, 2012 February 14' >> $pyFile
+echo 'import corr' >> $pyFile
+echo 'import time' >> $pyFile
+echo 'import sys' >> $pyFile
+#echo 'from guppi_utils import *' >> $pyFile
+
+echo -n 'fpga = corr.katcp_wrapper.FpgaClient(' >> $pyFile
+echo -n "'169.254.128.41'" >> $pyFile
+echo ',7147)' >> $pyFile
+echo 'time.sleep(0.2)' >> $pyFile
+echo -n 'readAccLen = fpga.read_int(' >> $pyFile
+echo -n "'ACC_LEN'" >> $pyFile
+echo ')' >> $pyFile
+echo 'readAccLen = readAccLen + 1' >> $pyFile
+echo 'print readAccLen' >> $pyFile
+echo 'exit()' >> $pyFile
+
+unsetenv PYTHONPATH
+
+python2.7 $pyFile
+
+
