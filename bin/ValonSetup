@@ -1,0 +1,42 @@
+#!/bin/tcsh
+#Script sets the Valon Synthesiser to the desired frequency
+#Script first creates a python script with the required input values
+#Cleans up the python path and executes the script
+#HISTORY
+#12Feb15 GIL Change default and add comments
+#12Feb13 GIL initial version
+
+set inFreq=$1
+if ("$inFreq" == "") then
+  set inFreq=500
+endif
+echo "ValonSetup: Set Valon Synthesizer output frequency to " $inFreq " MHz"
+
+#Create the temporary python script.  This is done to put all capabilities 
+#In this single file
+set pyFile = /tmp/Valon"$inFreq".py
+rm -f $pyFile !> /dev/null
+
+echo 'import valon_synth' > $pyFile
+echo 'import time' >> $pyFile
+echo -n 'clock = valon_synth.Synthesizer(' >> $pyFile
+echo -n "'/dev/ttyS0'" >> $pyFile
+echo ')' >> $pyFile
+echo 'time.sleep(0.1)' >> $pyFile
+echo 'print "Previous frequency:", clock.get_frequency(0x00), " MHz"' >>$pyFile
+echo 'time.sleep(0.1)' >> $pyFile
+echo -n 'clock.set_frequency(0x00,' >> $pyFile
+echo -n $inFreq >> $pyFile
+echo ')' >> $pyFile
+echo 'time.sleep(0.1)' >> $pyFile
+echo 'print "Current  frequency:", clock.get_frequency(0x00), " MHz"' >>$pyFile
+echo 'exit()' >> $pyFile
+#echo 'Created: ' $pyFile
+
+
+unsetenv PYTHONPATH
+python2.7 $pyFile
+rm -f $pyFile !> /dev/null
+
+
+
